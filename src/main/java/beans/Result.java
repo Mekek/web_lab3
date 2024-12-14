@@ -47,27 +47,25 @@ public class Result implements Serializable {
      *
      * @return true if the point falls within the area, false otherwise.
      */
-    private boolean checkHit() {
+    private Boolean checkHit() {
         BigDecimal x = new BigDecimal(String.valueOf(this.x).replace(',', '.'));
         BigDecimal y = new BigDecimal(String.valueOf(this.y).replace(',', '.'));
         BigDecimal r = new BigDecimal(String.valueOf(this.r).replace(',', '.'));
 
-        BigDecimal halfR = r.divide(BigDecimal.valueOf(2));
+        boolean triangle = x.compareTo(BigDecimal.ZERO) >= 0
+                && y.compareTo(BigDecimal.ZERO) <= 0
+                && y.compareTo(r.add(x)) <= 0;
 
         boolean circle = x.compareTo(BigDecimal.ZERO) <= 0
-                && y.compareTo(BigDecimal.ZERO) >= 0
-                && x.pow(2).add(y.pow(2)).compareTo(halfR.pow(2)) <= 0;
-
-        boolean triangle = x.compareTo(BigDecimal.ZERO) >= 0
-                && y.compareTo(BigDecimal.ZERO) >= 0
-                && y.compareTo(r.subtract(BigDecimal.valueOf(2).multiply(x))) <= 0;
+                && y.compareTo(BigDecimal.ZERO) <= 0
+                && x.pow(2).add(y.pow(2)).compareTo(r.pow(2)) <= 0;
 
         boolean rectangle = x.compareTo(BigDecimal.ZERO) >= 0
                 && y.compareTo(BigDecimal.ZERO) <= 0
-                && x.compareTo(halfR) <= 0
+                && x.compareTo(r.divide(BigDecimal.valueOf(2))) <= 0
                 && y.compareTo(BigDecimal.ZERO.subtract(r)) >= 0;
 
-        return circle || triangle || rectangle;
+        return (Boolean) (triangle || circle || rectangle);
     }
 
     /**
@@ -120,7 +118,7 @@ public class Result implements Serializable {
         this.r = r;
     }
 
-    public Boolean getHit() {
+    public boolean getHit() {
         return hit;
     }
 

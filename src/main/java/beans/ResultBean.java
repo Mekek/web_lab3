@@ -4,9 +4,12 @@ import database.ResultInterface;
 import lombok.Data;
 import lombok.Getter;
 
+import javax.inject.Named;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -15,6 +18,8 @@ import java.util.List;
  * This class represents a bean for managing and interacting with results.
  */
 @Data
+@Named("results")  // Привязываем бин к имени "results"
+@SessionScoped      // Область сессии
 public class ResultBean implements Serializable {
 
     @Inject
@@ -31,6 +36,7 @@ public class ResultBean implements Serializable {
     @PostConstruct
     private void initialize() {
         currResult = new Result();
+        currResult.setX(BigDecimal.valueOf(0));
         updateLocal();
     }
 
@@ -70,4 +76,6 @@ public class ResultBean implements Serializable {
     public void setSource(String source) {
         this.source = source;
     }
+
+
 }

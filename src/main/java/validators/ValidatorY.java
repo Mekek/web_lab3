@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 @FacesValidator("validatorY")
 public class ValidatorY implements Validator {
     private static final String NUMBER_PATTERN = "^(-)?[0-9]+(\\.[0-9]+)?$";
-    private static final BigDecimal MAX_Y = new BigDecimal("5");
+    private static final BigDecimal MAX_Y = new BigDecimal("3");
     private static final BigDecimal MIN_Y = new BigDecimal("-3");
 
     /**

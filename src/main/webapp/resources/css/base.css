@@ -3,17 +3,15 @@
 /*Import fonts*/
 
 @font-face {
-    font-family: "Ferrum";
+    font-family: "Arial";
     font-display: swap;
-    src: url("#{resource['fonts/Ferrum.woff2']}") format("woff2"), url("#{resource['fonts/Ferrum.woff2']}") format("woff2");
     font-weight: 400;
     font-style: normal;
 }
 
 @font-face {
-    font-family: "Morice";
+    font-family: "Arial";
     font-display: swap;
-    src: url("#{resource['fonts/Morice-Bejar.woff']}") format("woff"), url("#{resource['fonts/Morice-Bejar.woff2']}") format("woff2");
     font-weight: 400;
     font-style: normal;
 }
@@ -107,7 +105,7 @@ html {
 /*--------------------*/
 
 body {
-    font-family: "Ferrum", "Morice", fantasy;
+    font-family: "Arial";
     color: var(--myblack);
     background: var(--mygray);
 }

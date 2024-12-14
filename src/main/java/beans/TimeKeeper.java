@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.inject.Named;
+import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -14,6 +16,8 @@ import java.util.Date;
 @Getter
 @Setter
 @ToString
+@Named("timeKeeper")  // Привязываем бин к имени "timeKeeper"
+@SessionScoped
 public class TimeKeeper implements Serializable {
     private String time;
 

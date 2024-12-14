@@ -16,7 +16,7 @@
 .header__title {
   text-transform: uppercase;
   font-size: 1.8rem;
-  font-family: "Ferrum", "Morice", fantasy;
+  font-family: "Arial";
 }
 
 .header__title._active {
@@ -298,7 +298,7 @@ span.ui-slider-handle.ui-corner-all.ui-state-default {
   font-size: 16px;
 }
 
-input#form\:RValue, input#form\:XValue {
+input#form\:RValue {
   width: 50px;
   text-align: center;
   padding-top: 0.55em;
@@ -330,7 +330,32 @@ input#form\:RValue, input#form\:XValue {
   transition: background 0.1s ease-out;
 }
 
+.big-btn-2 {
+  width: 100%;
+  font-size: 1rem;
+  color: #fff;
+  background: var(--myblack);
+  padding: 7px;
+  border-radius: 5px;
+  transition: background 0.2s ease-in;
+}
+
+.big-btn-2:hover {
+  background: var(--myred);
+  transition: background 0.1s ease-out;
+}
+
+.selected-btn {
+  background: var(--myred);
+  color: white;
+}
+
 .big-btn:disabled {
+  opacity: 0.2;
+  background: var(--myblack);
+}
+
+.big-btn-2:disabled {
   opacity: 0.2;
   background: var(--myblack);
 }
@@ -344,7 +369,7 @@ input#form\:RValue, input#form\:XValue {
 .main__datetime {
   margin: 15px 0;
   font-size: 24px;
-  font-family: "Ferrum", "Morice", fantasy;
+  font-family: "Arial";
 }
 
 .main__table-block {
@@ -436,6 +461,49 @@ table.main__table td {
 
 .footer__title {
   text-transform: uppercase;
-  font-family: "Ferrum", "Morice", fantasy;
+  font-family: "Arial", serif;
   font-size: 1.25rem;
+}
+
+
+
+
+
+/* Стиль для кнопки вверх */
+.ui-spinner-up {
+  width: 30px; /* Ширина кнопки */
+  height: 30px; /* Высота кнопки */
+  text-align: center;
+  line-height: 30px; /* Вертикальное выравнивание текста */
+  font-size: 14px; /* Размер текста */
+  background-color: #4CAF50; /* Цвет фона */
+  color: white; /* Цвет текста */
+  border: 1px solid #388E3C; /* Граница */
+  cursor: pointer;
+}
+
+/* Стиль для кнопки вниз */
+.ui-spinner-down {
+  width: 30px; /* Ширина кнопки */
+  height: 30px; /* Высота кнопки */
+  text-align: center;
+  line-height: 30px; /* Вертикальное выравнивание текста */
+  font-size: 14px; /* Размер текста */
+  background-color: #F44336; /* Цвет фона */
+  color: white; /* Цвет текста */
+  border: 1px solid #D32F2F; /* Граница */
+  cursor: pointer;
+}
+
+/* Изменяем стиль при наведении */
+.ui-spinner-up:hover, .ui-spinner-down:hover {
+  background-color: #388E3C; /* Цвет фона при наведении */
+  border-color: #2C6B31; /* Цвет границы при наведении */
+}
+
+/* Стиль для disabled кнопок */
+.ui-spinner-up.ui-state-disabled, .ui-spinner-down.ui-state-disabled {
+  background-color: #E0E0E0; /* Цвет фона для отключенной кнопки */
+  border-color: #BDBDBD; /* Цвет границы для отключенной кнопки */
+  color: #9E9E9E; /* Цвет текста для отключенной кнопки */
 }

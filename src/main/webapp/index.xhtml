@@ -16,7 +16,7 @@
 
         <h:form styleClass="main__datetime">
             <h:outputText id="my-clock" value="#{timeKeeper.time}"/>
-            <p:poll interval="11" update="my-clock" listener="#{timeKeeper.updateTime}"/>
+            <p:poll interval="10" update="my-clock" listener="#{timeKeeper.updateTime}"/>
         </h:form>
 
         <h:button outcome="main" style="width: 150px" styleClass="big-btn" value="Verify!"/>

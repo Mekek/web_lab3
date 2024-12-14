@@ -58,6 +58,7 @@ function redrawGraph(r) {
     ctx.stroke();
     ctx.closePath();
 
+
     // main figure
     ctx.fillStyle = '#236BF155';
     ctx.beginPath();
@@ -66,10 +67,13 @@ function redrawGraph(r) {
     ctx.lineTo(w/2 + hatchGap, h/2 + hatchGap * 2);
     ctx.lineTo(w/2, h/2 + hatchGap * 2);
     ctx.lineTo(w/2, h/2);
-    ctx.lineTo(w/2 - hatchGap, h/2);
-    ctx.arc(w/2, h/2, hatchGap, Math.PI, 1.5 * Math.PI, false);
-    ctx.lineTo(w/2, h/2 - hatchGap*2);
-    ctx.lineTo(w/2 + hatchGap, h/2);
+    // correct
+    ctx.lineTo(w/2, h/2 + hatchGap * 2)
+    ctx.arc(w/2, h/2, hatchGap * 2, Math.PI * 0.5, Math.PI, false);
+    ctx.lineTo(w/2 - hatchGap * 2, h/2);
+    ctx.lineTo(w/2, h/2 - hatchGap * 2);
+    ctx.lineTo(w/2, h/2);
+
     ctx.fill();
     ctx.strokeStyle = '#3E23F1'
     ctx.stroke();
@@ -78,7 +82,7 @@ function redrawGraph(r) {
     const fontSize = hatchGap / 3.5
     ctx.fillStyle = 'black'
 
-    ctx.font = `${fontSize * 1.4}px "Ferrum", "Morice", fantasy`;
+    ctx.font = `${fontSize * 1.4}px "Arial", serif`;
     ctx.fillText('y', w / 2 - hatchWidth * 2.8, 15)
     ctx.fillText('x', w - 20, h / 2 - hatchWidth * 2.4)
 
@@ -91,7 +95,7 @@ function redrawGraph(r) {
         label2 = r
     }
 
-    ctx.font = `${fontSize}px "Ferrum", "Morice", fantasy`;
+    ctx.font = `${fontSize}px "Arial", serif`;
     ctx.fillText(label1, w / 2 + hatchGap - 3, h / 2 + hatchWidth * 2.8);
     ctx.fillText(label2, w / 2 + hatchGap * 2 - 3, h / 2 + hatchWidth * 2.8);
     ctx.fillText('-' + label1, w / 2 - hatchGap - 7, h / 2 + hatchWidth * 2.8);
@@ -175,6 +179,7 @@ canvas.addEventListener('click', (event) => {
     }
 })
 
+// const submitBtn = document.getElementById('form:submitBtn');
 submitBtn.addEventListener('click', () => {
     if (rValid) {
         document.getElementById('form:source').value = 'button';

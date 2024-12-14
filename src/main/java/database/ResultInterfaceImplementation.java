@@ -3,14 +3,19 @@ package database;
 import beans.Result;
 import java.util.List;
 
+import javax.inject.Named;
+import javax.enterprise.context.SessionScoped;
 import javax.persistence.*;
 import javax.enterprise.inject.Default;
+import java.io.Serializable;
 
 /**
  * This class provides an implementation of the ResultInterface for interacting with a data store using JPA (Java Persistence API).
  */
 @Default
-public class ResultInterfaceImplementation implements ResultInterface {
+@Named("ResultInterface")
+@SessionScoped
+public class ResultInterfaceImplementation implements ResultInterface, Serializable  {
     private final EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("ResultUnit");
     private final EntityManager entityManager = entityManagerFactory.createEntityManager();
 
