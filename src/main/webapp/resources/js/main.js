@@ -175,6 +175,14 @@ yInput.addEventListener('input', () => {
     }
 });
 
+function updateXValue(value) {
+    var spinnerX = document.getElementById('XValue');
+    spinnerX.value = value;
+    // Принудительное обновление скрытого поля
+    var hiddenX = document.getElementById('hiddenX');
+    hiddenX.value = value;
+}
+
 // Проверка валидности всех данных и активация кнопки отправки
 // const submitBtn = document.getElementById('form:submitBtn');
 // function toggleSubmitBtn() {

@@ -77,5 +77,18 @@ public class ResultBean implements Serializable {
         this.source = source;
     }
 
+    public void addPoint(BigDecimal xCenter, BigDecimal yCenter, BigDecimal r) {
+        // Устанавливаем значения для текущего результата
+        currResult.setX(xCenter);
+        currResult.setY(yCenter);
+        currResult.setR(r);
+
+        // Проверяем попадание точки в область
+        currResult.setHit(currResult.checkHit());
+
+        // Добавляем результат в базу данных
+        addResult(); // Этот метод сохранит результат в базу данных, включая время запроса
+    }
+
 
 }

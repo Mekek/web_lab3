@@ -162,22 +162,71 @@ canvas.addEventListener('click', (event) => {
         const x = event.pageX - canvasLeft,
             y = event.pageY - canvasTop;
 
-        const xCenter = Math.round((x - w/2) / (hatchGap * (2/rInput.value))*1000)/1000,
-            yCenter = Math.round((h/2 - y) / (hatchGap * (2/rInput.value))*1000)/1000;
+        // Вычисление координат X и Y на основе масштаба
+        const xCenter = Math.round((x - w / 2) / (hatchGap * (2 / rInput.value)) * 1000) / 1000;
+        const yCenter = Math.round((h / 2 - y) / (hatchGap * (2 / rInput.value)) * 1000) / 1000;
 
-        const oldX = xInput.value, oldY = yInput.value;
-        yInput.value = yCenter;
+        // Обновить значения в форме
         xInput.value = xCenter;
+        yInput.value = yCenter;
         document.getElementById('form:source').value = 'graph';
 
-        submitBtn.onclick(undefined);
+        // Проверка попадания точки в область
+        const r = parseFloat(rInput.value);  // Радиус
+        const isHit = isPointInArea(xCenter, yCenter, r);
 
-        xInput.value = oldX;
-        yInput.value = oldY;
+        // Нарисовать точку на графике
+        drawPoint(xCenter, yCenter, isHit);
+
+
     } else {
         messages.innerText = "The R field cannot be empty!";
     }
-})
+});
+
+function isPointInArea(x, y, r) {
+    // Переводим входные параметры в числа с плавающей точкой
+    x = parseFloat(x);
+    y = parseFloat(y);
+    r = parseFloat(r);
+
+    // Проверка попадания в треугольник
+    const triangle = x >= 0 && y <= 0 && y <= (r + x);
+
+    // Проверка попадания в круг
+    const circle = x <= 0 && y <= 0 && (x * x + y * y) <= (r * r);
+
+    // Проверка попадания в прямоугольник
+    const rectangle = x >= 0 && y <= 0 && x <= (r / 2) && y >= (-r);
+
+    // Возвращаем true, если точка попала в любую из фигур
+    return triangle || circle || rectangle;
+}
+
+
+
+// Функция для рисования точки на графике
+function drawPoint(xCenter, yCenter, r, is_hit) {
+    const size = r; // Размер R
+    const scaledXCenter = xCenter / size;
+    const scaledYCenter = yCenter / size;
+
+    const x = w / 2 + scaledXCenter * hatchGap * 2;
+    const y = h / 2 - scaledYCenter * hatchGap * 2;
+    const radius = 3;
+
+
+    // Выбираем цвет в зависимости от попадания точки
+    ctx.fillStyle = is_hit ? '#00ff00' : '#ff0000'; // Зеленая для попадания, красная для промаха
+
+    // Рисуем точку на графике
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.closePath();
+
+}
+
 
 // const submitBtn = document.getElementById('form:submitBtn');
 submitBtn.addEventListener('click', () => {
@@ -187,4 +236,6 @@ submitBtn.addEventListener('click', () => {
         messages.innerText = "The R field cannot be empty!";
     }
 });
+
+
 
