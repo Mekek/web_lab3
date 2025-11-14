@@ -3,134 +3,111 @@ package beans;
 import lombok.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import javax.persistence.*;
 
 /**
- * This class represents the result of checking a point for inclusion in a specified coordinate area.
+ * Represents the result of checking a point in the coordinate area.
  */
 @Entity
+@Table(name = "point_results")
+@Getter
+@Setter
 @ToString
-@NoArgsConstructor
+@AllArgsConstructor
 public class Result implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", nullable = false)
-    private Long id;
-    @Column(name = "x", nullable = false)
-    private BigDecimal x;
-    @Column(name = "y", nullable = false)
-    private BigDecimal y;
-    @Column(name = "r", nullable = false)
-    private BigDecimal r;
-    @Column(name = "hit", nullable = false)
-    private Boolean hit;
-    @Column(name = "request_time", nullable = false)
-    private String requestTime;
 
-    /**
-     * Creates a new instance of the Result class based on an existing Result object.
-     *
-     * @param sourceResult The source Result object used to create a new instance.
-     */
-    public Result(Result sourceResult) {
-        this.id = sourceResult.id;
-        this.x = sourceResult.getX();
-        this.y = sourceResult.getY();
-        this.r = sourceResult.getR();
-        this.hit = checkHit();
-        this.requestTime = sourceResult.requestTime;
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, precision = 10, scale = 4)
+    private BigDecimal x;
+
+    @Column(nullable = false, precision = 10, scale = 4)
+    private BigDecimal y;
+
+    @Column(nullable = false, precision = 10, scale = 4)
+    private BigDecimal r;
+
+    @Column(nullable = false)
+    private Boolean hit;
+
+    @Column(name = "request_time", nullable = false)
+    private LocalDateTime requestTime;
+
+    // --- Constructors ---
+
+    /** Copy constructor */
+    public Result(Result source) {
+        this.id = source.id;
+        this.x = source.x;
+        this.y = source.y;
+        this.r = source.r;
+        this.hit = source.hit;
+        this.requestTime = source.requestTime;
     }
 
-    /**
-     * Checks whether the point falls within the specified coordinate area.
-     *
-     * @return true if the point falls within the area, false otherwise.
-     */
-    private Boolean checkHit() {
-        BigDecimal x = new BigDecimal(String.valueOf(this.x).replace(',', '.'));
-        BigDecimal y = new BigDecimal(String.valueOf(this.y).replace(',', '.'));
-        BigDecimal r = new BigDecimal(String.valueOf(this.r).replace(',', '.'));
+    public Result() {
+        // Пустой конструктор нужен для JSF/Hibernate
+    }
+
+    /** Constructor from coordinates */
+    public Result(BigDecimal x, BigDecimal y, BigDecimal r) {
+        this.x = Objects.requireNonNull(x, "x cannot be null");
+        this.y = Objects.requireNonNull(y, "y cannot be null");
+        this.r = Objects.requireNonNull(r, "r cannot be null");
+        this.hit = checkHit();
+        this.requestTime = LocalDateTime.now();
+    }
+
+    // --- Logic ---
+
+    /** Checks whether the point falls within the area */
+    public Boolean checkHit() {
+        BigDecimal half = BigDecimal.valueOf(0.5);
+        BigDecimal x = this.x;
+        BigDecimal y = this.y;
+        BigDecimal r = this.r;
 
         boolean triangle = x.compareTo(BigDecimal.ZERO) >= 0
-                && y.compareTo(BigDecimal.ZERO) <= 0
-                && y.compareTo(r.add(x)) <= 0;
+                && y.compareTo(BigDecimal.ZERO) >= 0
+                && y.compareTo(r.multiply(half).subtract(x.multiply(half))) <= 0;
 
         boolean circle = x.compareTo(BigDecimal.ZERO) <= 0
                 && y.compareTo(BigDecimal.ZERO) <= 0
-                && x.pow(2).add(y.pow(2)).compareTo(r.pow(2)) <= 0;
+                && x.pow(2).add(y.pow(2))
+                .compareTo(r.pow(2).divide(BigDecimal.valueOf(4), 10, RoundingMode.HALF_UP)) <= 0;
 
         boolean rectangle = x.compareTo(BigDecimal.ZERO) >= 0
                 && y.compareTo(BigDecimal.ZERO) <= 0
-                && x.compareTo(r.divide(BigDecimal.valueOf(2))) <= 0
-                && y.compareTo(BigDecimal.ZERO.subtract(r)) >= 0;
+                && x.compareTo(r) <= 0
+                && y.compareTo(BigDecimal.ZERO.subtract(r.multiply(half))) >= 0;
 
-        return (Boolean) (triangle || circle || rectangle);
+        return triangle || circle || rectangle;
     }
 
-    /**
-     * Returns a string representation of the result.
-     *
-     * @return "Hit" for inclusion and "Miss" for exclusion.
-     */
+    /** Returns string for table display */
     public String getStringSuccess() {
         return hit ? "Hit" : "Miss";
     }
 
-    /**
-     * Returns the classification of the result (hit or miss).
-     *
-     * @return "Hit" for inclusion and "Miss" for exclusion.
-     */
+    /** Returns CSS class for table row styling */
     public String getClassSuccess() {
         return hit ? "hit" : "miss";
     }
 
-    public Long getId() {
-        return id;
-    }
+    public void setX(BigDecimal x) { this.x = x; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setY(BigDecimal y) { this.y = y; }
 
-    public BigDecimal getX() {
-        return x;
-    }
+    public void setR(BigDecimal r) { this.r = r; }
 
-    public void setX(BigDecimal x) {
-        this.x = x;
-    }
+    public void setHit(Boolean hit) { this.hit = hit; }
 
-    public BigDecimal getY() {
-        return y;
-    }
-
-    public void setY(BigDecimal y) {
-        this.y = y;
-    }
-
-    public BigDecimal getR() {
-        return r;
-    }
-
-    public void setR(BigDecimal r) {
-        this.r = r;
-    }
-
-    public boolean getHit() {
-        return hit;
-    }
-
-    public void setHit(Boolean hit) {
-        this.hit = hit;
-    }
-
-    public String getRequestTime() {
-        return requestTime;
-    }
-
-    public void setRequestTime(String requestTime) {
-        this.requestTime = requestTime;
-    }
+    public void setRequestTime(LocalDateTime t) { this.requestTime = t; }
 }

@@ -16,7 +16,7 @@ import java.io.Serializable;
 @Named("ResultInterface")
 @SessionScoped
 public class ResultInterfaceImplementation implements ResultInterface, Serializable  {
-    private final EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("ResultUnit");
+    private final EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("web_lab3");
     private final EntityManager entityManager = entityManagerFactory.createEntityManager();
 
     /**

@@ -2,93 +2,96 @@ package beans;
 
 import database.ResultInterface;
 import lombok.Data;
-import lombok.Getter;
 
-import javax.inject.Named;
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
-import javax.annotation.PostConstruct;
+import javax.inject.Named;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 
-/**
- * This class represents a bean for managing and interacting with results.
- */
 @Data
-@Named("results")  // Привязываем бин к имени "results"
-@SessionScoped      // Область сессии
+@Named("results")
+@SessionScoped
 public class ResultBean implements Serializable {
 
     @Inject
     private ResultInterface resultInterface;
 
-    private Result currResult;
-    private List<Result> resultList;
-    @Getter
+    private Result currResult;               // временный объект для X и R
+    private List<Result> resultList;         // таблица
     private String source;
 
-    /**
-     * Initializes the ResultBean by creating a new instance of Result and updating the local result list.
-     */
+    private final List<Integer> yValues = Arrays.asList(-5, -4, -3, -2, -1, 0, 1);
+    private Map<Integer, Boolean> ySelection;  // выбранные значения Y
+
     @PostConstruct
     private void initialize() {
         currResult = new Result();
-        currResult.setX(BigDecimal.valueOf(0));
+        currResult.setX(BigDecimal.ZERO);
+        currResult.setR(null);
+
+        // ни одно значение Y не выбрано в начале
+        ySelection = new HashMap<>();
+        for (int y : yValues) ySelection.put(y, false);
+
         updateLocal();
     }
 
-    /**
-     * Updates the local result list by fetching results from the ResultInterface.
-     */
     private void updateLocal() {
         resultList = resultInterface.getAll();
     }
 
     /**
-     * Adds the current result to the result list, including a timestamp of the request time.
+     * Возвращает список выбранных значений Y
      */
-    public void addResult() {
-        Result copyResult = new Result(currResult);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        String requestTime = dateFormat.format(new Date(System.currentTimeMillis()));
-        copyResult.setRequestTime(requestTime);
-        resultInterface.save(copyResult);
+    public List<BigDecimal> getSelectedYValues() {
+        List<BigDecimal> selected = new ArrayList<>();
+        for (int y : yValues) {
+            if (Boolean.TRUE.equals(ySelection.get(y))) {
+                selected.add(BigDecimal.valueOf(y));
+            }
+        }
+        return selected;
+    }
+
+    /**
+     * Добавление нескольких точек (по всем Y)
+     */
+    public void addPoint(BigDecimal x, BigDecimal ignoredY, BigDecimal r) {
+
+        List<BigDecimal> ys = getSelectedYValues();
+
+        if (x == null || r == null || ys.isEmpty()) return;
+
+        for (BigDecimal y : ys) {
+
+            Result res = new Result();
+            res.setX(x);
+            res.setY(y);
+            res.setR(r);
+            res.setHit(res.checkHit());
+            res.setRequestTime(LocalDateTime.now());
+
+            resultInterface.save(res);
+        }
+
         updateLocal();
     }
 
     /**
-     * Clears all results in the resultInterface and updates the local result list.
+     * Очистка
      */
     public void clearResults() {
         resultInterface.clear();
-        resultList = resultInterface.getAll();
         updateLocal();
+
+        currResult = new Result();
+        currResult.setX(BigDecimal.ZERO);
+        currResult.setR(null);
+
+        ySelection.replaceAll((k, v) -> false);
     }
-
-    /**
-     * Sets the source attribute.
-     *
-     * @param source The source to be set.
-     */
-    public void setSource(String source) {
-        this.source = source;
-    }
-
-    public void addPoint(BigDecimal xCenter, BigDecimal yCenter, BigDecimal r) {
-        // Устанавливаем значения для текущего результата
-        currResult.setX(xCenter);
-        currResult.setY(yCenter);
-        currResult.setR(r);
-
-        // Проверяем попадание точки в область
-        currResult.setHit(currResult.checkHit());
-
-        // Добавляем результат в базу данных
-        addResult(); // Этот метод сохранит результат в базу данных, включая время запроса
-    }
-
-
 }

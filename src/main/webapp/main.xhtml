@@ -6,173 +6,127 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ace="http://www.icesoft.com/icefaces/components">
-
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
 
 <ui:composition template="/templates/templLayout.xhtml">
+
     <ui:define name="head">
         <title>Lab3 - Main page</title>
     </ui:define>
 
     <ui:define name="main">
-            <h1 class="main__title">Web-programming, Lab 3</h1>
 
-            <div class="main__row">
-                <div class="main__left-block">
-                    <canvas id="graph"/>
-                    <h:form id="form" styleClass="form">
-                        <label class="form__label">X</label>
-                        <div id="xSpinner">
-                            <p:spinner id="XValue"
-                                       value="#{results.currResult.x}"
-                                       min="-4.9"
-                                       max="4.9"
-                                       stepFactor="0.1"
-                                       size="5">
-                                <f:validator validatorId="validatorX" />
-                            </p:spinner>
-                        </div>
+        <h1 class="main__title">Web-programming, Lab 3</h1>
 
-                        <label class="form__label">Y</label>
-                        <div class="form__row">
-                            <p:inputText id="Y"
-                                         required="true"
-                                         class="form__number-input"
-                                         name="y"
-                                         placeholder="Input Y (-3;3)"
-                                         value="#{results.currResult.y}">
-                                <f:validator validatorId="validatorY"/>
-                            </p:inputText>
-                        </div>
+        <div class="main__row">
 
-                        <label class="form__label">R</label>
-                        <div class="form__row">
-                            <button type="button" class="big-btn-2" onclick="setRValue(1, this)" data-value="1">1</button>
-                            <button type="button" class="big-btn-2" onclick="setRValue(2, this)" data-value="2">2</button>
-                            <button type="button" class="big-btn-2" onclick="setRValue(3, this)" data-value="3">3</button>
-                            <button type="button" class="big-btn-2" onclick="setRValue(4, this)" data-value="4">4</button>
-                            <button type="button" class="big-btn-2" onclick="setRValue(5, this)" data-value="5">5</button>
-                            <h:inputHidden id="R" name="r" value="#{results.currResult.r}">
-                                <f:validator validatorId="validatorR"/>
-                            </h:inputHidden>
-                        </div>
-<!--                        <div class="form__row">-->
-<!--                            <p:commandButton class="big-btn-2" type="button" value="1" action="#{results.currResult.setR(1)}"-->
-<!--                                             onclick="disableOtherButtons(this)" styleClass="big-btn-2" data-value="1"/>-->
-<!--                            <p:commandButton class="big-btn-2" type="button" value="2" action="#{results.currResult.setR(2)}"-->
-<!--                                             onclick="disableOtherButtons(this)" styleClass="big-btn-2" data-value="2"/>-->
-<!--                            <p:commandButton class="big-btn-2" type="button" value="3" action="#{results.currResult.setR(3)}"-->
-<!--                                             onclick="disableOtherButtons(this)"  styleClass="big-btn-2" data-value="3"/>-->
-<!--                            <p:commandButton class="big-btn-2" type="button" value="4" action="#{results.currResult.setR(4)}"-->
-<!--                                             onclick="disableOtherButtons(this)"  styleClass="big-btn-2" data-value="4"/>-->
-<!--                            <p:commandButton class="big-btn-2" type="button" value="5" action="#{results.currResult.setR(5)}"-->
-<!--                                             onclick="disableOtherButtons(this)"  styleClass="big-btn-2" data-value="5"/>-->
-<!--                            <h:inputHidden id="R" name="r" value="#{results.currResult.r}">-->
-<!--                                <f:validator validatorId="validatorR"/>-->
-<!--                            </h:inputHidden>-->
-<!--                        </div>-->
-<!--                        -->
+            <div class="main__left-block">
+                <canvas id="graph"/>
 
+                <h:form id="form" styleClass="form">
 
+                    <!-- X -->
+                    <label class="form__label">X</label>
+                    <div id="xInput">
+                        <p:inputText id="XValue"
+                                     value="#{results.currResult.x}"
+                                     placeholder="-5 ... 3">
+                            <f:validator validatorId="validatorX"/>
+                        </p:inputText>
+                    </div>
 
+                    <!-- Y -->
+                    <label class="form__label">Y</label>
+                    <div class="form__row" id="yCheckboxes">
 
+                        <c:forEach items="#{results.yValues}" var="yv">
+                            <h:selectBooleanCheckbox
+                                    value="#{results.ySelection[yv]}"
+                                    id="y_#{yv}">
+                                <f:ajax render="yCheckboxes"/>
+                            </h:selectBooleanCheckbox>
+                            <label for="y_#{yv}">#{yv}</label>
+                        </c:forEach>
 
-<!--                            <div class="form__row">-->
-<!--                        <p:commandButton value="1" action="#{results.currResult.setR(1)}"-->
-<!--                                         onclick="disableOtherButtons(this); handleRButtonClick(1);"-->
-<!--                                         styleClass="big-btn-2" data-value="1"/>-->
-<!--                        <p:commandButton value="2" action="#{results.currResult.setR(2)}"-->
-<!--                                         onclick="disableOtherButtons(this); handleRButtonClick(2);"-->
-<!--                                         styleClass="big-btn-2" data-value="2"/>-->
-<!--                        <p:commandButton value="3" action="#{results.currResult.setR(3)}"-->
-<!--                                         onclick="disableOtherButtons(this); handleRButtonClick(3);"-->
-<!--                                         styleClass="big-btn-2" data-value="3"/>-->
-<!--                        <p:commandButton value="4" action="#{results.currResult.setR(4)}"-->
-<!--                                         onclick="disableOtherButtons(this); handleRButtonClick(4);"-->
-<!--                                         styleClass="big-btn-2" data-value="4"/>-->
-<!--                        <p:commandButton value="5" action="#{results.currResult.setR(5)}"-->
-<!--                                         onclick="disableOtherButtons(this); handleRButtonClick(5);"-->
-<!--                                         styleClass="big-btn-2" data-value="5"/>-->
-<!--                        <h:inputHidden id="R" name="r" value="#{results.currResult.r}">-->
-<!--                            <f:validator validatorId="validatorR"/>-->
-<!--                        </h:inputHidden>-->
-<!--                    </div>-->
+                    </div>
 
-                        <script type="text/javascript">
-                            function setRValue(value, selectedButton) {
-                                // Устанавливаем значение R
-                                var hiddenR = document.getElementById('R');
-                                hiddenR.value = value;
+                    <!-- R -->
+                    <label class="form__label">R</label>
+                    <div class="form__row">
+                        <p:selectOneRadio id="RValue" value="#{results.currResult.r}" layout="pageDirection">
+                            <f:selectItem itemLabel="1" itemValue="1"/>
+                            <f:selectItem itemLabel="2" itemValue="2"/>
+                            <f:selectItem itemLabel="3" itemValue="3"/>
+                            <f:selectItem itemLabel="4" itemValue="4"/>
+                            <f:selectItem itemLabel="5" itemValue="5"/>
+                        </p:selectOneRadio>
+                    </div>
 
-                                // Включаем/выключаем кнопки
-                                disableOtherButtons(selectedButton);
-                            }
+                    <!-- Buttons -->
+                    <div class="form__row form__btn-row">
+                        <p:commandButton id="submitBtn" styleClass="big-btn" value="Submit"
+                                         action="#{results.addPoint(results.currResult.x, results.currResult.y, results.currResult.r)}"
+                                         update="results-table"
+                                         oncomplete="updateDotsOnGraphFromTable();"/>
+                        <p:commandButton id="clearBtn" styleClass="big-btn" value="Clear"
+                                         action="#{results.clearResults}"
+                                         immediate="true"
+                                         update="results-table"
+                                         oncomplete="updateDotsOnGraphFromTable();"/>
+                        <h:inputHidden id="source" value="#{results.source}" />
+                    </div>
+                </h:form>
 
-
-                            function disableOtherButtons(selectedButton) {
-                                // Сброс выделения у всех кнопок
-                                var buttons = document.querySelectorAll('.form__row .big-btn-2');
-                                buttons.forEach(function(button) {
-                                    button.disabled = false; // Сбрасываем блокировку для всех кнопок
-                                    button.classList.remove('selected-btn'); // Убираем класс выделения
-                                });
-
-                                // Добавляем выделение только к нажатой кнопке
-                                selectedButton.classList.add('selected-btn');
-                            }
-                        </script>
-
-                        <!--                        <h:outputText value="#{results.currResult.r}" />-->
-
-                        <div class="form__row form__btn-row">
-                            <p:commandButton id="submitBtn" styleClass="big-btn" type="submit" value="Submit"
-                                             action="#{results.addResult}" update="results-table" oncomplete="updateDotsOnGraphFromTable();"/>
-                            <p:commandButton id="clearBtn" styleClass="big-btn" value="Clear"
-                                             action="#{results.clearResults}" immediate="true" update="results-table" oncomplete="updateDotsOnGraphFromTable();"/>
-                            <h:inputHidden id="source" value="#{results.source}" />
-                        </div>
-                    </h:form>
-
-
-                    <p:messages id="messagesC" showSummary="false" showDetail="true" closable="true">
-                        <h:outputText/>
-                    </p:messages>
-                    <p:messages id="messagesS" showSummary="false" showDetail="true" closable="true">
-                        <p:autoUpdate/>
-                    </p:messages>
-
-                </div>
-                <div class="main__table-block">
-                    <p:dataTable id="results-table" tableStyleClass="main__table" var="result" value="#{results.resultList}"
-                                 emptyMessage="">
-                        <p:column headerText="X">
-                            <h:outputText value="#{result.x}" />
-                        </p:column>
-
-                        <p:column headerText="Y">
-                            <h:outputText value="#{result.y}" />
-                        </p:column>
-
-                        <p:column headerText="R">
-                            <h:outputText value="#{result.r}" />
-                        </p:column>
-
-                        <p:column headerText="Result">
-                            <h:outputText styleClass="${result.classSuccess}" value="#{result.stringSuccess}" />
-                        </p:column>
-
-                        <p:column headerText="Time">
-                            <h:outputText value="#{result.requestTime}" />
-                        </p:column>
-                    </p:dataTable>
-                </div>
+                <!-- Messages -->
+                <p:messages id="messagesC" showSummary="false" showDetail="true" closable="true"/>
+                <p:messages id="messagesS" showSummary="false" showDetail="true" closable="true">
+                    <p:autoUpdate/>
+                </p:messages>
             </div>
+
+            <!-- Table -->
+            <div class="main__table-block">
+                <p:dataTable id="results-table"
+                             tableStyleClass="main__table"
+                             var="result"
+                             value="#{results.resultList}"
+                             emptyMessage="">
+                    <p:column headerText="X">
+                        <h:outputText value="#{result.x}" />
+                    </p:column>
+
+                    <p:column headerText="Y">
+                        <h:outputText value="#{result.y}" />
+                    </p:column>
+
+                    <p:column headerText="R">
+                        <h:outputText value="#{result.r}" />
+                    </p:column>
+
+                    <p:column headerText="Result">
+                        <h:outputText styleClass="#{result.classSuccess}" value="#{result.stringSuccess}" />
+                    </p:column>
+
+                    <p:column headerText="Time">
+                        <h:outputText value="#{result.requestTime}" />
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </div>
     </ui:define>
 
     <ui:define name="js">
         <h:outputScript name="js/main.js"/>
         <h:outputScript name="js/graph.js"/>
+        <script type="text/javascript">
+            function selectOnlyOneY(selectedCheckbox) {
+                var checkboxes = document.querySelectorAll('#yCheckboxes input[type=checkbox]');
+                checkboxes.forEach(function(cb) {
+                    if(cb !== selectedCheckbox) cb.checked = false;
+                });
+            }
+        </script>
     </ui:define>
-</ui:composition>
 
+</ui:composition>
 </html>

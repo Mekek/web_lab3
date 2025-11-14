@@ -190,14 +190,14 @@ function isPointInArea(x, y, r) {
     y = parseFloat(y);
     r = parseFloat(r);
 
-    // Проверка попадания в треугольник
-    const triangle = x >= 0 && y <= 0 && y <= (r + x);
+    // Проверка попадания в треугольник (первая четверть)
+    const triangle = x >= 0 && y >= 0 && y <= (r/2 - x/2);
 
-    // Проверка попадания в круг
-    const circle = x <= 0 && y <= 0 && (x * x + y * y) <= (r * r);
+    // Проверка попадания в круг (третья четверть)
+    const circle = x <= 0 && y <= 0 && (x * x + y * y) <= (r * r / 4);
 
-    // Проверка попадания в прямоугольник
-    const rectangle = x >= 0 && y <= 0 && x <= (r / 2) && y >= (-r);
+    // Проверка попадания в прямоугольник (четвертая четверть)
+    const rectangle = x >= 0 && y <= 0 && x <= r && y >= (-r/2);
 
     // Возвращаем true, если точка попала в любую из фигур
     return triangle || circle || rectangle;

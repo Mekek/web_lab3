@@ -1,9 +1,8 @@
-create table if not exists result (
-	id serial
-	primary key,
-	x numeric not null,
-	y numeric not null,
-	r numeric not null,
-	hit boolean not null,
-	request_time timestamp with time zone default CURRENT_TIMESTAMP
-)
+CREATE TABLE point_results (
+                               id SERIAL PRIMARY KEY,
+                               x NUMERIC NOT NULL,
+                               y NUMERIC NOT NULL,
+                               r NUMERIC NOT NULL,
+                               hit BOOLEAN NOT NULL,
+                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
