@@ -38,16 +38,26 @@
                     <!-- Y -->
                     <label class="form__label">Y</label>
                     <div class="form__row" id="yCheckboxes">
+                        <h:selectBooleanCheckbox value="#{results.y5}" id="y_5"/>
+                        <label for="y_5">-5</label>
 
-                        <c:forEach items="#{results.yValues}" var="yv">
-                            <h:selectBooleanCheckbox
-                                    value="#{results.ySelection[yv]}"
-                                    id="y_#{yv}">
-                                <f:ajax render="yCheckboxes"/>
-                            </h:selectBooleanCheckbox>
-                            <label for="y_#{yv}">#{yv}</label>
-                        </c:forEach>
+                        <h:selectBooleanCheckbox value="#{results.y4}" id="y_4"/>
+                        <label for="y_4">-4</label>
 
+                        <h:selectBooleanCheckbox value="#{results.y3}" id="y_3"/>
+                        <label for="y_3">-3</label>
+
+                        <h:selectBooleanCheckbox value="#{results.y2}" id="y_2"/>
+                        <label for="y_2">-2</label>
+
+                        <h:selectBooleanCheckbox value="#{results.y1}" id="y_1"/>
+                        <label for="y_1">-1</label>
+
+                        <h:selectBooleanCheckbox value="#{results.y0}" id="y_0"/>
+                        <label for="y_0">0</label>
+
+                        <h:selectBooleanCheckbox value="#{results.y_1}" id="y1"/>
+                        <label for="y1">1</label>
                     </div>
 
                     <!-- R -->
@@ -65,7 +75,7 @@
                     <!-- Buttons -->
                     <div class="form__row form__btn-row">
                         <p:commandButton id="submitBtn" styleClass="big-btn" value="Submit"
-                                         action="#{results.addPoint(results.currResult.x, results.currResult.y, results.currResult.r)}"
+                                         action="#{results.addPoint(results.currResult.x, results.currResult.r)}"
                                          update="results-table"
                                          oncomplete="updateDotsOnGraphFromTable();"/>
                         <p:commandButton id="clearBtn" styleClass="big-btn" value="Clear"
@@ -76,6 +86,7 @@
                         <h:inputHidden id="source" value="#{results.source}" />
                     </div>
                 </h:form>
+
 
                 <!-- Messages -->
                 <p:messages id="messagesC" showSummary="false" showDetail="true" closable="true"/>
@@ -118,14 +129,6 @@
     <ui:define name="js">
         <h:outputScript name="js/main.js"/>
         <h:outputScript name="js/graph.js"/>
-        <script type="text/javascript">
-            function selectOnlyOneY(selectedCheckbox) {
-                var checkboxes = document.querySelectorAll('#yCheckboxes input[type=checkbox]');
-                checkboxes.forEach(function(cb) {
-                    if(cb !== selectedCheckbox) cb.checked = false;
-                });
-            }
-        </script>
     </ui:define>
 
 </ui:composition>
