@@ -62,16 +62,18 @@ function redrawGraph(r) {
     // main figure
     ctx.fillStyle = '#236BF155';
     ctx.beginPath();
-    ctx.moveTo(w/2 + hatchGap, h/2);
-    ctx.lineTo(w/2 + hatchGap, h/2);
-    ctx.lineTo(w/2 + hatchGap, h/2 + hatchGap * 2);
-    ctx.lineTo(w/2, h/2 + hatchGap * 2);
+    ctx.moveTo(w/2 + hatchGap * 2, h/2);
+    ctx.lineTo(w/2 + hatchGap * 2, h/2);
+    ctx.lineTo(w/2 + hatchGap * 2, h/2 + hatchGap);
+    ctx.lineTo(w/2, h/2 + hatchGap);
     ctx.lineTo(w/2, h/2);
     // correct
-    ctx.lineTo(w/2, h/2 + hatchGap * 2)
-    ctx.arc(w/2, h/2, hatchGap * 2, Math.PI * 0.5, Math.PI, false);
-    ctx.lineTo(w/2 - hatchGap * 2, h/2);
-    ctx.lineTo(w/2, h/2 - hatchGap * 2);
+    ctx.lineTo(w/2, h/2 + hatchGap)
+    ctx.arc(w/2, h/2, hatchGap, Math.PI * 0.5, Math.PI, false);
+    ctx.lineTo(w/2 - hatchGap, h/2);
+    ctx.lineTo(w/2, h/2);
+    ctx.lineTo(w/2, h/2 - hatchGap);
+    ctx.lineTo(w/2 + hatchGap * 2, h/2);
     ctx.lineTo(w/2, h/2);
 
     ctx.fill();
@@ -140,8 +142,10 @@ for (let i = startRange; i <= endRange; i += step) {
 }
 
 function updateDotsOnGraphFromTable() {
-    const size = rInput.value;
+    const rInput = document.querySelector('input[name="form:RValue"]:checked');
+    const size = rInput ? rInput.value : 'R';
     const tableRows = document.querySelectorAll('.main__table tbody tr');
+
     if (isNumberInArray(size, numberArray)) {
         redrawGraph(size);
     }
@@ -154,8 +158,11 @@ function updateDotsOnGraphFromTable() {
 }
 
 canvas.addEventListener('click', (event) => {
-    if (rValid) {
-        messages.innerText = '';
+    const rInput = document.querySelector('input[name="form:RValue"]:checked');
+    const messages = document.getElementById('messagesC');
+
+    if (rInput && rInput.value) {
+        if (messages) messages.innerText = '';
         const canvasLeft = canvas.offsetLeft + canvas.clientLeft,
             canvasTop = canvas.offsetTop + canvas.clientTop;
 
@@ -167,47 +174,39 @@ canvas.addEventListener('click', (event) => {
         const yCenter = Math.round((h / 2 - y) / (hatchGap * (2 / rInput.value)) * 1000) / 1000;
 
         // Обновить значения в форме
-        xInput.value = xCenter;
-        yInput.value = yCenter;
-        document.getElementById('form:source').value = 'graph';
+        const xInput = document.getElementById('form:XValue');
+        if (xInput) xInput.value = xCenter;
+
+        const sourceInput = document.getElementById('form:source');
+        if (sourceInput) sourceInput.value = 'graph';
 
         // Проверка попадания точки в область
-        const r = parseFloat(rInput.value);  // Радиус
+        const r = parseFloat(rInput.value);
         const isHit = isPointInArea(xCenter, yCenter, r);
 
-        // Нарисовать точку на графике
-        drawPoint(xCenter, yCenter, isHit);
 
+        drawPoint(xCenter, yCenter, r, isHit);
 
     } else {
-        messages.innerText = "The R field cannot be empty!";
+        if (messages) messages.innerText = "The R field cannot be empty!";
     }
 });
 
 function isPointInArea(x, y, r) {
-    // Переводим входные параметры в числа с плавающей точкой
     x = parseFloat(x);
     y = parseFloat(y);
     r = parseFloat(r);
 
-    // Проверка попадания в треугольник (первая четверть)
     const triangle = x >= 0 && y >= 0 && y <= (r/2 - x/2);
-
-    // Проверка попадания в круг (третья четверть)
     const circle = x <= 0 && y <= 0 && (x * x + y * y) <= (r * r / 4);
-
-    // Проверка попадания в прямоугольник (четвертая четверть)
     const rectangle = x >= 0 && y <= 0 && x <= r && y >= (-r/2);
 
-    // Возвращаем true, если точка попала в любую из фигур
     return triangle || circle || rectangle;
 }
 
 
-
-// Функция для рисования точки на графике
 function drawPoint(xCenter, yCenter, r, is_hit) {
-    const size = r; // Размер R
+    const size = r;
     const scaledXCenter = xCenter / size;
     const scaledYCenter = yCenter / size;
 
@@ -215,27 +214,28 @@ function drawPoint(xCenter, yCenter, r, is_hit) {
     const y = h / 2 - scaledYCenter * hatchGap * 2;
     const radius = 3;
 
+    ctx.fillStyle = is_hit ? '#00ff00' : '#ff0000';
 
-    // Выбираем цвет в зависимости от попадания точки
-    ctx.fillStyle = is_hit ? '#00ff00' : '#ff0000'; // Зеленая для попадания, красная для промаха
-
-    // Рисуем точку на графике
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
     ctx.fill();
     ctx.closePath();
-
 }
 
 
-// const submitBtn = document.getElementById('form:submitBtn');
-submitBtn.addEventListener('click', () => {
-    if (rValid) {
-        document.getElementById('form:source').value = 'button';
-    } else {
-        messages.innerText = "The R field cannot be empty!";
+document.addEventListener('DOMContentLoaded', function() {
+    const submitBtn = document.getElementById('form:submitBtn');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', () => {
+            const rInput = document.querySelector('input[name="form:RValue"]:checked');
+            const messages = document.getElementById('messagesC');
+
+            if (rInput && rInput.value) {
+                const sourceInput = document.getElementById('form:source');
+                if (sourceInput) sourceInput.value = 'button';
+            } else {
+                if (messages) messages.innerText = "The R field cannot be empty!";
+            }
+        });
     }
 });
-
-
-
