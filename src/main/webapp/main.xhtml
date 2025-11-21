@@ -23,6 +23,9 @@
             <div class="main__left-block">
                 <canvas id="graph"/>
 
+                <!-- Добавляем скрытый компонент для обновления через AJAX -->
+                <h:panelGroup id="graphUpdateHelper"/>
+
                 <h:form id="form" styleClass="form">
 
                     <!-- X -->
@@ -30,7 +33,8 @@
                     <div id="xInput">
                         <p:inputText id="XValue"
                                      value="#{results.currResult.x}"
-                                     placeholder="-5 ... 3">
+                                     placeholder="-5 ... 5"
+                                     maxlength="8">
                             <f:validator validatorId="validatorX"/>
                         </p:inputText>
                     </div>
@@ -69,6 +73,7 @@
                             <f:selectItem itemLabel="3" itemValue="3"/>
                             <f:selectItem itemLabel="4" itemValue="4"/>
                             <f:selectItem itemLabel="5" itemValue="5"/>
+                            <!-- Убираем AJAX обновление графика, так как это делается через JavaScript -->
                         </p:selectOneRadio>
                     </div>
 
@@ -76,17 +81,16 @@
                     <div class="form__row form__btn-row">
                         <p:commandButton id="submitBtn" styleClass="big-btn" value="Submit"
                                          action="#{results.addPoint(results.currResult.x, results.currResult.r)}"
-                                         update="results-table"
-                                         oncomplete="updateDotsOnGraphFromTable();"/>
+                                         update="results-table messagesS"
+                                         oncomplete="updateDotsOnGraphFromTable()"/>
                         <p:commandButton id="clearBtn" styleClass="big-btn" value="Clear"
                                          action="#{results.clearResults}"
                                          immediate="true"
-                                         update="results-table"
-                                         oncomplete="updateDotsOnGraphFromTable();"/>
+                                         update="results-table messagesS"
+                                         oncomplete="clearGraph()"/>
                         <h:inputHidden id="source" value="#{results.source}" />
                     </div>
                 </h:form>
-
 
                 <!-- Messages -->
                 <p:messages id="messagesC" showSummary="false" showDetail="true" closable="true"/>

@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.util.regex.Pattern;
 
 /**
- * Валидатор для X (inputText: -4.9 ... 4.9, шаг 0.1)
+ * Валидатор для X (inputText: число от -5 до 5, максимум 8 символов)
  */
 @FacesValidator("validatorX")
 public class ValidatorX implements Validator {
@@ -26,6 +26,13 @@ public class ValidatorX implements Validator {
 
         String input = value.toString().replace(",", ".");
 
+        // Проверка на максимальную длину
+        if (input.length() > 8) {
+            throw new ValidatorException(
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, null,
+                            "The value of X must be no more than 8 characters!"));
+        }
+
         if (!Pattern.matches(NUMBER_PATTERN, input)) {
             throw new ValidatorException(
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, null,
@@ -33,24 +40,13 @@ public class ValidatorX implements Validator {
         }
 
         BigDecimal x = new BigDecimal(input);
-        BigDecimal minX = new BigDecimal("-4.9");
-        BigDecimal maxX = new BigDecimal("4.9");
-        BigDecimal step = new BigDecimal("0.1");
+        BigDecimal minX = new BigDecimal("-5");
+        BigDecimal maxX = new BigDecimal("5");
 
-        boolean valid = false;
-        BigDecimal current = minX;
-        while (current.compareTo(maxX) <= 0) {
-            if (current.compareTo(x) == 0) {
-                valid = true;
-                break;
-            }
-            current = current.add(step);
-        }
-
-        if (!valid) {
+        if (x.compareTo(minX) < 0 || x.compareTo(maxX) > 0) {
             throw new ValidatorException(
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, null,
-                            "The value of X must be from -4.9 to 4.9 with step 0.1"));
+                            "The value of X must be between -5 and 5!"));
         }
     }
 }

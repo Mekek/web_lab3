@@ -89,12 +89,12 @@ function redrawGraph(r) {
     ctx.fillText('x', w - 20, h / 2 - hatchWidth * 2.4)
 
     let label1, label2;
-    if (isNaN(r)) {
-        label1 = r + '/2'
-        label2 = r
+    if (isNaN(r) || r === 'R') {
+        label1 = 'R/2'
+        label2 = 'R'
     } else {
-        label1 = r / 2
-        label2 = r
+        label1 = (r / 2).toFixed(1);
+        label2 = r.toString();
     }
 
     ctx.font = `${fontSize}px "Arial", serif`;
@@ -109,6 +109,7 @@ function redrawGraph(r) {
     ctx.fillText('-' + label2, w / 2 + hatchWidth * 2, h / 2 + hatchGap * 2 + 3);
 }
 
+// Инициализация графика при загрузке
 redrawGraph('R');
 
 function printDotsOnGraph(xCenter, yCenter, rValue, isHit, size) {
@@ -129,32 +130,70 @@ function printDotsOnGraph(xCenter, yCenter, rValue, isHit, size) {
     ctx.closePath();
 }
 
-function isNumberInArray(number, array) {
-    return array.includes(number);
-}
-
-const startRange = 1.25;
-const endRange = 4.75;
-const step = 0.25;
-const numberArray = [];
-for (let i = startRange; i <= endRange; i += step) {
-    numberArray.push(i.toString());
-}
-
 function updateDotsOnGraphFromTable() {
     const rInput = document.querySelector('input[name="form:RValue"]:checked');
     const size = rInput ? rInput.value : 'R';
     const tableRows = document.querySelectorAll('.main__table tbody tr');
 
-    if (isNumberInArray(size, numberArray)) {
-        redrawGraph(size);
-    }
+    // Перерисовываем график с текущим R
+    redrawGraph(size);
+
     tableRows.forEach(row => {
         if (row.childNodes.length > 1) {
             const children = row.children;
             printDotsOnGraph(children[0].innerHTML, children[1].innerHTML, children[2].innerHTML, children[3].firstChild.classList.contains('hit'), size);
         }
     });
+}
+
+// Функции для работы с чекбоксами Y
+function resetYCheckboxes() {
+    const checkboxes = document.querySelectorAll('#yCheckboxes input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+}
+
+function setYCheckbox(yValue) {
+    // Найти ближайшее допустимое значение Y
+    const allowedYValues = [-5, -4, -3, -2, -1, 0, 1];
+    let closestY = allowedYValues[0];
+    let minDiff = Math.abs(yValue - closestY);
+
+    for (let i = 1; i < allowedYValues.length; i++) {
+        const diff = Math.abs(yValue - allowedYValues[i]);
+        if (diff < minDiff) {
+            minDiff = diff;
+            closestY = allowedYValues[i];
+        }
+    }
+
+    // Установить соответствующий чекбокс
+    const checkboxId = getCheckboxIdForY(closestY);
+    const checkbox = document.getElementById(checkboxId);
+    if (checkbox) {
+        checkbox.checked = true;
+    }
+}
+
+function getCheckboxIdForY(yValue) {
+    const yMap = {
+        '-5': 'form:y_5',
+        '-4': 'form:y_4',
+        '-3': 'form:y_3',
+        '-2': 'form:y_2',
+        '-1': 'form:y_1',
+        '0': 'form:y_0',
+        '1': 'form:y1'
+    };
+    return yMap[yValue.toString()];
+}
+
+// Функция очистки графика
+function clearGraph() {
+    const rInput = document.querySelector('input[name="form:RValue"]:checked');
+    const currentR = rInput ? rInput.value : 'R';
+    redrawGraph(currentR);
 }
 
 canvas.addEventListener('click', (event) => {
@@ -170,8 +209,12 @@ canvas.addEventListener('click', (event) => {
             y = event.pageY - canvasTop;
 
         // Вычисление координат X и Y на основе масштаба
-        const xCenter = Math.round((x - w / 2) / (hatchGap * (2 / rInput.value)) * 1000) / 1000;
-        const yCenter = Math.round((h / 2 - y) / (hatchGap * (2 / rInput.value)) * 1000) / 1000;
+        let xCenter = (x - w / 2) / (hatchGap * (2 / rInput.value));
+        let yCenter = (h / 2 - y) / (hatchGap * (2 / rInput.value));
+
+        // Округление до тысячных
+        xCenter = Math.round(xCenter * 1000) / 1000;
+        yCenter = Math.round(yCenter * 1000) / 1000;
 
         // Обновить значения в форме
         const xInput = document.getElementById('form:XValue');
@@ -180,12 +223,15 @@ canvas.addEventListener('click', (event) => {
         const sourceInput = document.getElementById('form:source');
         if (sourceInput) sourceInput.value = 'graph';
 
-        // Проверка попадания точки в область
-        const r = parseFloat(rInput.value);
-        const isHit = isPointInArea(xCenter, yCenter, r);
+        // Сбросить все чекбоксы Y и установить только текущий Y
+        resetYCheckboxes();
+        setYCheckbox(yCenter);
 
-
-        drawPoint(xCenter, yCenter, r, isHit);
+        // Программно нажать кнопку Submit для отправки данных
+        const submitBtn = document.getElementById('form:submitBtn');
+        if (submitBtn) {
+            submitBtn.click();
+        }
 
     } else {
         if (messages) messages.innerText = "The R field cannot be empty!";
@@ -204,38 +250,16 @@ function isPointInArea(x, y, r) {
     return triangle || circle || rectangle;
 }
 
-
-function drawPoint(xCenter, yCenter, r, is_hit) {
-    const size = r;
-    const scaledXCenter = xCenter / size;
-    const scaledYCenter = yCenter / size;
-
-    const x = w / 2 + scaledXCenter * hatchGap * 2;
-    const y = h / 2 - scaledYCenter * hatchGap * 2;
-    const radius = 3;
-
-    ctx.fillStyle = is_hit ? '#00ff00' : '#ff0000';
-
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.closePath();
-}
-
-
 document.addEventListener('DOMContentLoaded', function() {
-    const submitBtn = document.getElementById('form:submitBtn');
-    if (submitBtn) {
-        submitBtn.addEventListener('click', () => {
-            const rInput = document.querySelector('input[name="form:RValue"]:checked');
-            const messages = document.getElementById('messagesC');
-
-            if (rInput && rInput.value) {
-                const sourceInput = document.getElementById('form:source');
-                if (sourceInput) sourceInput.value = 'button';
-            } else {
-                if (messages) messages.innerText = "The R field cannot be empty!";
-            }
+    // Обработчик изменения R - мгновенная перерисовка графика
+    const rInputs = document.querySelectorAll('input[name="form:RValue"]');
+    rInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            redrawGraph(this.value);
+            updateDotsOnGraphFromTable();
         });
-    }
+    });
+
+    // Инициализация графика при загрузке
+    updateDotsOnGraphFromTable();
 });
