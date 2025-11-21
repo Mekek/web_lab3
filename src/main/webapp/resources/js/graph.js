@@ -112,14 +112,17 @@ function redrawGraph(r) {
 // Инициализация графика при загрузке
 redrawGraph('R');
 
-function printDotsOnGraph(xCenter, yCenter, rValue, isHit, size) {
-    if (parseFloat(size) === parseFloat(rValue)) {
-        ctx.fillStyle = isHit ? '#00ff00' : '#ff0000'
+function printDotsOnGraph(xCenter, yCenter, rValue, isHit, currentR) {
+    // Всегда используем правильные цвета для текущего R
+    // Если точка была создана с другим R, она должна быть серой
+    if (Math.abs(parseFloat(rValue) - parseFloat(currentR)) < 0.001) {
+        ctx.fillStyle = isHit ? '#00ff00' : '#ff0000';
     } else {
-        ctx.fillStyle = '#c0c0c0'
+        ctx.fillStyle = '#c0c0c0';
     }
-    const scaledXCenter = xCenter / size;
-    const scaledYCenter = yCenter / size;
+
+    const scaledXCenter = xCenter / currentR;
+    const scaledYCenter = yCenter / currentR;
 
     const x = w / 2 + scaledXCenter * hatchGap * 2;
     const y = h / 2 - scaledYCenter * hatchGap * 2;
@@ -132,61 +135,45 @@ function printDotsOnGraph(xCenter, yCenter, rValue, isHit, size) {
 
 function updateDotsOnGraphFromTable() {
     const rInput = document.querySelector('input[name="form:RValue"]:checked');
-    const size = rInput ? rInput.value : 'R';
+    const currentR = rInput ? rInput.value : 'R';
     const tableRows = document.querySelectorAll('.main__table tbody tr');
 
     // Перерисовываем график с текущим R
-    redrawGraph(size);
+    redrawGraph(currentR);
 
     tableRows.forEach(row => {
         if (row.childNodes.length > 1) {
             const children = row.children;
-            printDotsOnGraph(children[0].innerHTML, children[1].innerHTML, children[2].innerHTML, children[3].firstChild.classList.contains('hit'), size);
+            printDotsOnGraph(
+                parseFloat(children[0].innerHTML),
+                parseFloat(children[1].innerHTML),
+                parseFloat(children[2].innerHTML),
+                children[3].firstChild.classList.contains('hit'),
+                currentR
+            );
         }
     });
 }
 
-// Функции для работы с чекбоксами Y
-function resetYCheckboxes() {
-    const checkboxes = document.querySelectorAll('#yCheckboxes input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = false;
-    });
-}
+// Функция для установки произвольного значения Y
+function setYValue(yValue) {
+    // Округление до тысячных
+    yValue = Math.round(yValue * 1000) / 1000;
 
-function setYCheckbox(yValue) {
-    // Найти ближайшее допустимое значение Y
-    const allowedYValues = [-5, -4, -3, -2, -1, 0, 1];
-    let closestY = allowedYValues[0];
-    let minDiff = Math.abs(yValue - closestY);
-
-    for (let i = 1; i < allowedYValues.length; i++) {
-        const diff = Math.abs(yValue - allowedYValues[i]);
-        if (diff < minDiff) {
-            minDiff = diff;
-            closestY = allowedYValues[i];
-        }
+    // Создаем скрытое поле для Y если его нет
+    let yHiddenInput = document.getElementById('yHiddenInput');
+    if (!yHiddenInput) {
+        yHiddenInput = document.createElement('input');
+        yHiddenInput.type = 'hidden';
+        yHiddenInput.id = 'yHiddenInput';
+        yHiddenInput.name = 'yHiddenInput';
+        document.getElementById('form').appendChild(yHiddenInput);
     }
+    yHiddenInput.value = yValue;
 
-    // Установить соответствующий чекбокс
-    const checkboxId = getCheckboxIdForY(closestY);
-    const checkbox = document.getElementById(checkboxId);
-    if (checkbox) {
-        checkbox.checked = true;
-    }
-}
-
-function getCheckboxIdForY(yValue) {
-    const yMap = {
-        '-5': 'form:y_5',
-        '-4': 'form:y_4',
-        '-3': 'form:y_3',
-        '-2': 'form:y_2',
-        '-1': 'form:y_1',
-        '0': 'form:y_0',
-        '1': 'form:y1'
-    };
-    return yMap[yValue.toString()];
+    // Также устанавливаем source в 'graph'
+    const sourceInput = document.getElementById('form:source');
+    if (sourceInput) sourceInput.value = 'graph';
 }
 
 // Функция очистки графика
@@ -220,12 +207,8 @@ canvas.addEventListener('click', (event) => {
         const xInput = document.getElementById('form:XValue');
         if (xInput) xInput.value = xCenter;
 
-        const sourceInput = document.getElementById('form:source');
-        if (sourceInput) sourceInput.value = 'graph';
-
-        // Сбросить все чекбоксы Y и установить только текущий Y
-        resetYCheckboxes();
-        setYCheckbox(yCenter);
+        // Установить произвольное значение Y
+        setYValue(yCenter);
 
         // Программно нажать кнопку Submit для отправки данных
         const submitBtn = document.getElementById('form:submitBtn');
@@ -250,16 +233,53 @@ function isPointInArea(x, y, r) {
     return triangle || circle || rectangle;
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Обработчик изменения R - мгновенная перерисовка графика
+// Улучшенный обработчик изменения R
+function setupRChangeListener() {
     const rInputs = document.querySelectorAll('input[name="form:RValue"]');
     rInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            redrawGraph(this.value);
-            updateDotsOnGraphFromTable();
-        });
+        // Удаляем старые обработчики чтобы избежать дублирования
+        input.removeEventListener('change', handleRChange);
+        // Добавляем новый обработчик
+        input.addEventListener('change', handleRChange);
     });
+}
+
+function handleRChange() {
+    // Мгновенная перерисовка графика при изменении R
+    redrawGraph(this.value);
+    updateDotsOnGraphFromTable();
+}
+
+// Функция для принудительного обновления обработчиков R
+function refreshRListeners() {
+    setTimeout(() => {
+        setupRChangeListener();
+    }, 100);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация обработчиков изменения R
+    setupRChangeListener();
 
     // Инициализация графика при загрузке
     updateDotsOnGraphFromTable();
+
+    // Обновляем обработчики после загрузки PrimeFaces компонентов
+    setTimeout(() => {
+        setupRChangeListener();
+    }, 500);
 });
+
+// Обновляем обработчики при любом обновлении страницы через AJAX
+if (window.PF) {
+    PF('ajaxStatus').onstart = function() {
+        // Перед AJAX запросом
+    };
+
+    PF('ajaxStatus').onsuccess = function() {
+        // После AJAX запроса - обновляем обработчики
+        setTimeout(() => {
+            setupRChangeListener();
+        }, 100);
+    };
+}

@@ -4,6 +4,7 @@ import database.ResultInterface;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Named("results")
 @SessionScoped
@@ -58,20 +60,61 @@ public class ResultBean2 implements Serializable {
         return selected;
     }
 
-    public void addPoint(BigDecimal x, BigDecimal r) {
-        List<BigDecimal> ys = getSelectedYValues();
-        if (x == null || r == null || ys.isEmpty()) return;
+    // Новый метод для обработки данных из формы
+    public void addPointFromForm() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        Map<String, String> params = context.getExternalContext().getRequestParameterMap();
 
-        for (BigDecimal y : ys) {
-            Result res = new Result();
-            res.setX(x);
-            res.setY(y);
-            res.setR(r);
-            res.setHit(res.checkHit());
-            res.setRequestTime(LocalDateTime.now());
-            resultInterface.save(res);
+        String source = params.get("form:source");
+        BigDecimal x = currResult.getX();
+        BigDecimal r = currResult.getR();
+
+        if (x == null || r == null) {
+            return;
+        }
+
+        if ("graph".equals(source)) {
+            // Обработка клика по графику - получаем Y из параметра
+            String yParam = params.get("yHiddenInput");
+            if (yParam != null && !yParam.trim().isEmpty()) {
+                try {
+                    BigDecimal y = new BigDecimal(yParam);
+                    // Округление до тысячных
+                    y = y.setScale(3, BigDecimal.ROUND_HALF_UP);
+
+                    Result res = new Result();
+                    res.setX(x);
+                    res.setY(y);
+                    res.setR(r);
+                    res.setHit(res.checkHit());
+                    res.setRequestTime(LocalDateTime.now());
+                    resultInterface.save(res);
+                } catch (NumberFormatException e) {
+                    // Обработка ошибки преобразования
+                    System.err.println("Invalid Y value from graph: " + yParam);
+                }
+            }
+        } else {
+            // Обработка обычной отправки формы - используем чекбоксы
+            List<BigDecimal> ys = getSelectedYValues();
+            if (ys.isEmpty()) return;
+
+            for (BigDecimal y : ys) {
+                Result res = new Result();
+                res.setX(x);
+                res.setY(y);
+                res.setR(r);
+                res.setHit(res.checkHit());
+                res.setRequestTime(LocalDateTime.now());
+                resultInterface.save(res);
+            }
         }
         updateLocal();
+    }
+
+    // Старый метод для обратной совместимости
+    public void addPoint(BigDecimal x, BigDecimal r) {
+        addPointFromForm();
     }
 
     public void clearResults() {
