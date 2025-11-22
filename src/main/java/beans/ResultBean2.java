@@ -23,7 +23,7 @@ public class ResultBean2 implements Serializable {
 
     private Result currResult;
     private List<Result> resultList;
-    private String source;
+    private String source = "form"; // Инициализируем source как 'form' по умолчанию
 
     // Используем полностью новые имена свойств
     private boolean y5;
@@ -65,7 +65,7 @@ public class ResultBean2 implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         Map<String, String> params = context.getExternalContext().getRequestParameterMap();
 
-        String source = params.get("form:source");
+        String source = this.source; // Используем значение из бина, а не из параметров
         BigDecimal x = currResult.getX();
         BigDecimal r = currResult.getR();
 
@@ -89,15 +89,22 @@ public class ResultBean2 implements Serializable {
                     res.setHit(res.checkHit());
                     res.setRequestTime(LocalDateTime.now());
                     resultInterface.save(res);
+
+                    // Сбросить source после обработки графика
+                    this.source = "form";
                 } catch (NumberFormatException e) {
                     // Обработка ошибки преобразования
                     System.err.println("Invalid Y value from graph: " + yParam);
+                    this.source = "form"; // Сбросить source в случае ошибки
                 }
             }
         } else {
             // Обработка обычной отправки формы - используем чекбоксы
             List<BigDecimal> ys = getSelectedYValues();
-            if (ys.isEmpty()) return;
+            if (ys.isEmpty()) {
+                // Если чекбоксы не выбраны, ничего не делаем
+                return;
+            }
 
             for (BigDecimal y : ys) {
                 Result res = new Result();
@@ -124,6 +131,7 @@ public class ResultBean2 implements Serializable {
         currResult.setX(BigDecimal.ZERO);
         currResult.setR(null);
         y5 = y4 = y3 = y2 = y1 = y0 = y_1 = false;
+        this.source = "form"; // Сбросить source при очистке
     }
 
     // Геттеры и сеттеры

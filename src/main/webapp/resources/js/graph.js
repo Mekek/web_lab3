@@ -182,6 +182,20 @@ function setYValue(yValue) {
     if (sourceInput) sourceInput.value = 'graph';
 }
 
+// Функция для сброса source обратно в 'form' после отправки
+function resetFormSource() {
+    const sourceInput = document.getElementById('form:source');
+    if (sourceInput) sourceInput.value = 'form';
+}
+
+// Функция для очистки всех чекбоксов Y
+function clearYCheckboxes() {
+    const checkboxes = document.querySelectorAll('#yCheckboxes input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+}
+
 // Функция очистки графика
 function clearGraph() {
     const rInput = document.querySelector('input[name="form:RValue"]:checked');
@@ -215,6 +229,9 @@ canvas.addEventListener('click', (event) => {
         const xInput = document.getElementById('form:XValue');
         if (xInput) xInput.value = xCenter;
 
+        // ОЧИСТИТЬ ВСЕ ЧЕКБОКСЫ Y при клике по графику
+        clearYCheckboxes();
+
         // Установить произвольное значение Y
         setYValue(yCenter);
 
@@ -228,7 +245,6 @@ canvas.addEventListener('click', (event) => {
         if (messages) messages.innerText = "The R field cannot be empty!";
     }
 });
-
 
 function isPointInArea(x, y, r) {
     x = parseFloat(x);

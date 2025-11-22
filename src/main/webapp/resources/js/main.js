@@ -14,5 +14,9 @@ window.addEventListener('load', function () {
         console.log('Initial R value: ', rRadio.value);
     }
 
+    // Установка source по умолчанию
+    const sourceInput = document.getElementById('form:source');
+    if (sourceInput) sourceInput.value = 'form';
+
     updateDotsOnGraphFromTable();
 });

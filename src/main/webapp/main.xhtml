@@ -78,8 +78,9 @@
                     <div class="form__row form__btn-row">
                         <p:commandButton id="submitBtn" styleClass="big-btn" value="Submit"
                                          action="#{results.addPointFromForm}"
+                                         process="@form"
                                          update="results-table messagesS"
-                                         oncomplete="updateDotsOnGraphFromTable()"/>
+                                         oncomplete="updateDotsOnGraphFromTable(); resetFormSource();"/>
                         <p:commandButton id="clearBtn" styleClass="big-btn" value="Clear"
                                          action="#{results.clearResults}"
                                          immediate="true"
