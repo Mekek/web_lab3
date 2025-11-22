@@ -112,12 +112,13 @@ function redrawGraph(r) {
 redrawGraph('R');
 
 function printDotsOnGraph(xCenter, yCenter, rValue, isHit, currentR) {
-    // ВАЖНО: используем currentR для позиционирования точек, а не rValue!
-    // Точка должна отображаться в координатах, пересчитанных относительно текущего R
-    ctx.fillStyle = isHit ? '#00ff00' : '#ff0000';
+    // ВАЖНО: используем currentR для позиционирования точек И для определения цвета
+    // Пересчитываем статус точки относительно текущего R
+    const currentHit = isPointInArea(xCenter, yCenter, currentR);
 
-    // Масштабируем координаты относительно ТЕКУЩЕГО R (currentR), а не собственного R точки
-    // hatchGap * 2 соответствует currentR на графике
+    ctx.fillStyle = currentHit ? '#00ff00' : '#ff0000';
+
+    // Масштабируем координаты относительно ТЕКУЩЕГО R (currentR)
     const scaleFactor = hatchGap * 2 / currentR;
 
     const x = w / 2 + xCenter * scaleFactor;
@@ -152,9 +153,9 @@ function updateDotsOnGraphFromTable() {
             printDotsOnGraph(
                 parseFloat(children[0].innerHTML),  // X
                 parseFloat(children[1].innerHTML),  // Y
-                parseFloat(children[2].innerHTML),  // R точки (не используется для позиционирования)
-                children[3].firstChild.classList.contains('hit'),
-                currentR  // Текущий выбранный R для масштабирования
+                parseFloat(children[2].innerHTML),  // R точки (оригинальное значение)
+                children[3].firstChild.classList.contains('hit'), // Оригинальный статус (теперь не используется для цвета)
+                currentR  // Текущий выбранный R для масштабирования И определения цвета
             );
         }
     });
@@ -228,14 +229,19 @@ canvas.addEventListener('click', (event) => {
     }
 });
 
-// Остальной код остается без изменений...
+
 function isPointInArea(x, y, r) {
     x = parseFloat(x);
     y = parseFloat(y);
     r = parseFloat(r);
 
+    // Треугольник (первая четверть): x >= 0, y >= 0, y <= (r/2 - x/2)
     const triangle = x >= 0 && y >= 0 && y <= (r/2 - x/2);
+
+    // Круг (третья четверть): x <= 0, y <= 0, x² + y² <= (r/2)²
     const circle = x <= 0 && y <= 0 && (x * x + y * y) <= (r * r / 4);
+
+    // Прямоугольник (четвертая четверть): x >= 0, y <= 0, x <= r, y >= -r/2
     const rectangle = x >= 0 && y <= 0 && x <= r && y >= (-r/2);
 
     return triangle || circle || rectangle;
