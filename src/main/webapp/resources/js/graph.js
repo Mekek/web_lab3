@@ -287,6 +287,14 @@ function refreshRListeners() {
     }, 100);
 }
 
+// Простая функция для показа ошибки Y
+function showYError() {
+    const messages = document.getElementById('messagesC');
+    if (messages) {
+        messages.innerHTML = '<div class="ui-message-error">Please select at least one Y value!</div>';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Инициализация обработчиков изменения R
     setupRChangeListener();

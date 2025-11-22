@@ -80,7 +80,7 @@
                                          action="#{results.addPointFromForm}"
                                          process="@form"
                                          update="results-table messagesS"
-                                         oncomplete="updateDotsOnGraphFromTable(); resetFormSource();"/>
+                                         oncomplete="if(!#{results.atLeastOneYSelected}) {showYError();} else {updateDotsOnGraphFromTable(); resetFormSource();}"/>
                         <p:commandButton id="clearBtn" styleClass="big-btn" value="Clear"
                                          action="#{results.clearResults}"
                                          immediate="true"

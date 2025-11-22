@@ -23,9 +23,8 @@ public class ResultBean2 implements Serializable {
 
     private Result currResult;
     private List<Result> resultList;
-    private String source = "form"; // Инициализируем source как 'form' по умолчанию
+    private String source = "form";
 
-    // Используем полностью новые имена свойств
     private boolean y5;
     private boolean y4;
     private boolean y3;
@@ -60,12 +59,16 @@ public class ResultBean2 implements Serializable {
         return selected;
     }
 
-    // Новый метод для обработки данных из формы
+    // Простая проверка выбран ли хоть один Y
+    public boolean isAtLeastOneYSelected() {
+        return y5 || y4 || y3 || y2 || y1 || y0 || y_1;
+    }
+
     public void addPointFromForm() {
         FacesContext context = FacesContext.getCurrentInstance();
         Map<String, String> params = context.getExternalContext().getRequestParameterMap();
 
-        String source = this.source; // Используем значение из бина, а не из параметров
+        String source = this.source;
         BigDecimal x = currResult.getX();
         BigDecimal r = currResult.getR();
 
@@ -74,12 +77,10 @@ public class ResultBean2 implements Serializable {
         }
 
         if ("graph".equals(source)) {
-            // Обработка клика по графику - получаем Y из параметра
             String yParam = params.get("yHiddenInput");
             if (yParam != null && !yParam.trim().isEmpty()) {
                 try {
                     BigDecimal y = new BigDecimal(yParam);
-                    // Округление до тысячных
                     y = y.setScale(3, BigDecimal.ROUND_HALF_UP);
 
                     Result res = new Result();
@@ -90,19 +91,16 @@ public class ResultBean2 implements Serializable {
                     res.setRequestTime(LocalDateTime.now());
                     resultInterface.save(res);
 
-                    // Сбросить source после обработки графика
                     this.source = "form";
                 } catch (NumberFormatException e) {
-                    // Обработка ошибки преобразования
                     System.err.println("Invalid Y value from graph: " + yParam);
-                    this.source = "form"; // Сбросить source в случае ошибки
+                    this.source = "form";
                 }
             }
         } else {
-            // Обработка обычной отправки формы - используем чекбоксы
             List<BigDecimal> ys = getSelectedYValues();
             if (ys.isEmpty()) {
-                // Если чекбоксы не выбраны, ничего не делаем
+                // Просто выходим - сообщение покажем через JavaScript
                 return;
             }
 
@@ -119,7 +117,6 @@ public class ResultBean2 implements Serializable {
         updateLocal();
     }
 
-    // Старый метод для обратной совместимости
     public void addPoint(BigDecimal x, BigDecimal r) {
         addPointFromForm();
     }
@@ -131,7 +128,7 @@ public class ResultBean2 implements Serializable {
         currResult.setX(BigDecimal.ZERO);
         currResult.setR(null);
         y5 = y4 = y3 = y2 = y1 = y0 = y_1 = false;
-        this.source = "form"; // Сбросить source при очистке
+        this.source = "form";
     }
 
     // Геттеры и сеттеры
