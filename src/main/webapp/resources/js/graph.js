@@ -137,28 +137,36 @@ function printDotsOnGraph(xCenter, yCenter, rValue, isHit, currentR) {
 }
 
 function updateDotsOnGraphFromTable() {
-    const rInput = document.querySelector('input[name="form:RValue"]:checked');
-    const currentR = rInput ? parseFloat(rInput.value) : 'R';
-    const tableRows = document.querySelectorAll('.main__table tbody tr');
+    try {
+        const rInput = document.querySelector('input[name="form:RValue"]:checked');
+        const currentR = rInput ? parseFloat(rInput.value) : 'R';
+        const tableRows = document.querySelectorAll('.main__table tbody tr');
 
-    // Перерисовываем график с текущим R
-    redrawGraph(currentR);
+        // Перерисовываем график с текущим R
+        redrawGraph(currentR);
 
-    // Если R не выбран, не рисуем точки
-    if (currentR === 'R') return;
+        // Если R не выбран, не рисуем точки
+        if (currentR === 'R') return;
 
-    tableRows.forEach(row => {
-        if (row.childNodes.length > 1) {
-            const children = row.children;
-            printDotsOnGraph(
-                parseFloat(children[0].innerHTML),  // X
-                parseFloat(children[1].innerHTML),  // Y
-                parseFloat(children[2].innerHTML),  // R точки (оригинальное значение)
-                children[3].firstChild.classList.contains('hit'), // Оригинальный статус (теперь не используется для цвета)
-                currentR  // Текущий выбранный R для масштабирования И определения цвета
-            );
-        }
-    });
+        tableRows.forEach(row => {
+            if (row.childNodes.length > 1 && row.children.length >= 4) {
+                const children = row.children;
+                try {
+                    printDotsOnGraph(
+                        parseFloat(children[0].textContent || children[0].innerText),  // X
+                        parseFloat(children[1].textContent || children[1].innerText),  // Y
+                        parseFloat(children[2].textContent || children[2].innerText),  // R точки
+                        children[3].querySelector('span')?.className?.includes('hit') || false, // Статус
+                        currentR  // Текущий R для масштабирования
+                    );
+                } catch (e) {
+                    console.warn('Error parsing row data:', e);
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error updating graph dots:', error);
+    }
 }
 
 // Функция для установки произвольного значения Y
@@ -203,17 +211,16 @@ function clearGraph() {
     redrawGraph(currentR);
 }
 
+// Обработчик клика по графику
 canvas.addEventListener('click', (event) => {
     const rInput = document.querySelector('input[name="form:RValue"]:checked');
     const messages = document.getElementById('messagesC');
 
     if (rInput && rInput.value) {
         if (messages) messages.innerText = '';
-        const canvasLeft = canvas.offsetLeft + canvas.clientLeft,
-            canvasTop = canvas.offsetTop + canvas.clientTop;
-
-        const x = event.pageX - canvasLeft,
-            y = event.pageY - canvasTop;
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
 
         const currentR = parseFloat(rInput.value);
 
@@ -234,6 +241,9 @@ canvas.addEventListener('click', (event) => {
 
         // Установить произвольное значение Y
         setYValue(yCenter);
+
+        // Убираем сообщение об ошибке Y, так как мы установили значение через график
+        clearYError();
 
         // Программно нажать кнопку Submit для отправки данных
         const submitBtn = document.getElementById('form:submitBtn');
@@ -263,36 +273,61 @@ function isPointInArea(x, y, r) {
     return triangle || circle || rectangle;
 }
 
-// Улучшенный обработчик изменения R
+// Обработчик изменения R (для событий от PrimeFaces)
+function handleRChangeEvent() {
+    const rInput = document.querySelector('input[name="form:RValue"]:checked');
+    if (rInput) {
+        redrawGraph(rInput.value);
+        updateDotsOnGraphFromTable();
+    }
+}
+
+// Обработчик изменения R (для нативных событий)
 function setupRChangeListener() {
     const rInputs = document.querySelectorAll('input[name="form:RValue"]');
+
     rInputs.forEach(input => {
-        // Удаляем старые обработчики чтобы избежать дублирования
-        input.removeEventListener('change', handleRChange);
-        // Добавляем новый обработчик
-        input.addEventListener('change', handleRChange);
+        // Удаляем старые обработчики
+        input.removeEventListener('change', handleNativeRChange);
+        // Добавляем новые обработчики
+        input.addEventListener('change', handleNativeRChange);
     });
 }
 
-function handleRChange() {
-    // Мгновенная перерисовка графика при изменении R
+function handleNativeRChange() {
     redrawGraph(this.value);
     updateDotsOnGraphFromTable();
 }
 
-// Функция для принудительного обновления обработчиков R
-function refreshRListeners() {
+// Функция для принудительного обновления графика после AJAX
+function refreshGraphAfterAjax() {
     setTimeout(() => {
         setupRChangeListener();
-    }, 100);
+        updateDotsOnGraphFromTable();
+    }, 300);
 }
 
-// Простая функция для показа ошибки Y
+// Функция для показа ошибки Y
 function showYError() {
     const messages = document.getElementById('messagesC');
     if (messages) {
         messages.innerHTML = '<div class="ui-message-error">Please select at least one Y value!</div>';
     }
+}
+
+// Функция для очистки ошибки Y
+function clearYError() {
+    const messages = document.getElementById('messagesC');
+    if (messages) {
+        messages.innerHTML = '';
+    }
+}
+
+// Функция, вызываемая после завершения Submit
+function handleSubmitComplete() {
+    // Всегда обновляем график после Submit
+    refreshGraphAfterAjax();
+    resetFormSource();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -301,23 +336,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Инициализация графика при загрузке
     updateDotsOnGraphFromTable();
-
-    // Обновляем обработчики после загрузки PrimeFaces компонентов
-    setTimeout(() => {
-        setupRChangeListener();
-    }, 500);
 });
-
-// Обновляем обработчики при любом обновлении страницы через AJAX
-if (window.PF) {
-    PF('ajaxStatus').onstart = function() {
-        // Перед AJAX запросом
-    };
-
-    PF('ajaxStatus').onsuccess = function() {
-        // После AJAX запроса - обновляем обработчики
-        setTimeout(() => {
-            setupRChangeListener();
-        }, 100);
-    };
-}

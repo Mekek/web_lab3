@@ -6,11 +6,14 @@ window.addEventListener('load', function () {
     if(xInput) xInput.value = '0';
     console.log('Initial X value set to: ', xInput.value);
 
-    // Инициализация R
+    // Инициализация R и графика
     const rRadio = document.querySelector('input[name="form:RValue"]:checked');
     if (rRadio) {
         redrawGraph(rRadio.value);
-        updateDotsOnGraphFromTable();
+        // Небольшая задержка для гарантированной отрисовки
+        setTimeout(() => {
+            updateDotsOnGraphFromTable();
+        }, 100);
         console.log('Initial R value: ', rRadio.value);
     }
 
@@ -18,5 +21,6 @@ window.addEventListener('load', function () {
     const sourceInput = document.getElementById('form:source');
     if (sourceInput) sourceInput.value = 'form';
 
-    updateDotsOnGraphFromTable();
+    // Настройка обработчиков R
+    setupRChangeListener();
 });
