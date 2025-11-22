@@ -58,7 +58,6 @@ function redrawGraph(r) {
     ctx.stroke();
     ctx.closePath();
 
-
     // main figure
     ctx.fillStyle = '#236BF155';
     ctx.beginPath();
@@ -113,43 +112,49 @@ function redrawGraph(r) {
 redrawGraph('R');
 
 function printDotsOnGraph(xCenter, yCenter, rValue, isHit, currentR) {
-    // Всегда используем правильные цвета для текущего R
-    // Если точка была создана с другим R, она должна быть серой
-    if (Math.abs(parseFloat(rValue) - parseFloat(currentR)) < 0.001) {
-        ctx.fillStyle = isHit ? '#00ff00' : '#ff0000';
-    } else {
-        ctx.fillStyle = '#c0c0c0';
-    }
+    // ВАЖНО: используем currentR для позиционирования точек, а не rValue!
+    // Точка должна отображаться в координатах, пересчитанных относительно текущего R
+    ctx.fillStyle = isHit ? '#00ff00' : '#ff0000';
 
-    const scaledXCenter = xCenter / currentR;
-    const scaledYCenter = yCenter / currentR;
+    // Масштабируем координаты относительно ТЕКУЩЕГО R (currentR), а не собственного R точки
+    // hatchGap * 2 соответствует currentR на графике
+    const scaleFactor = hatchGap * 2 / currentR;
 
-    const x = w / 2 + scaledXCenter * hatchGap * 2;
-    const y = h / 2 - scaledYCenter * hatchGap * 2;
-    const radius = 3;
+    const x = w / 2 + xCenter * scaleFactor;
+    const y = h / 2 - yCenter * scaleFactor;
+
+    const radius = 4;
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
     ctx.fill();
     ctx.closePath();
+
+    // Добавляем обводку для лучшей видимости
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.stroke();
 }
 
 function updateDotsOnGraphFromTable() {
     const rInput = document.querySelector('input[name="form:RValue"]:checked');
-    const currentR = rInput ? rInput.value : 'R';
+    const currentR = rInput ? parseFloat(rInput.value) : 'R';
     const tableRows = document.querySelectorAll('.main__table tbody tr');
 
     // Перерисовываем график с текущим R
     redrawGraph(currentR);
 
+    // Если R не выбран, не рисуем точки
+    if (currentR === 'R') return;
+
     tableRows.forEach(row => {
         if (row.childNodes.length > 1) {
             const children = row.children;
             printDotsOnGraph(
-                parseFloat(children[0].innerHTML),
-                parseFloat(children[1].innerHTML),
-                parseFloat(children[2].innerHTML),
+                parseFloat(children[0].innerHTML),  // X
+                parseFloat(children[1].innerHTML),  // Y
+                parseFloat(children[2].innerHTML),  // R точки (не используется для позиционирования)
                 children[3].firstChild.classList.contains('hit'),
-                currentR
+                currentR  // Текущий выбранный R для масштабирования
             );
         }
     });
@@ -195,9 +200,11 @@ canvas.addEventListener('click', (event) => {
         const x = event.pageX - canvasLeft,
             y = event.pageY - canvasTop;
 
-        // Вычисление координат X и Y на основе масштаба
-        let xCenter = (x - w / 2) / (hatchGap * (2 / rInput.value));
-        let yCenter = (h / 2 - y) / (hatchGap * (2 / rInput.value));
+        const currentR = parseFloat(rInput.value);
+
+        // Вычисление координат X и Y на основе текущего R
+        let xCenter = (x - w / 2) / (hatchGap * (2 / currentR));
+        let yCenter = (h / 2 - y) / (hatchGap * (2 / currentR));
 
         // Округление до тысячных
         xCenter = Math.round(xCenter * 1000) / 1000;
@@ -221,6 +228,7 @@ canvas.addEventListener('click', (event) => {
     }
 });
 
+// Остальной код остается без изменений...
 function isPointInArea(x, y, r) {
     x = parseFloat(x);
     y = parseFloat(y);
