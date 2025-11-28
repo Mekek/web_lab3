@@ -10,11 +10,12 @@ import java.math.BigDecimal;
 import java.util.regex.Pattern;
 
 /**
- * Валидатор для X (inputText: число от -5 до 5, максимум 8 символов)
+ * Валидатор для X (inputText: число от -5 до 5, максимум 12 символов)
  */
 @FacesValidator("validatorX")
 public class ValidatorX implements Validator {
-    private static final String NUMBER_PATTERN = "^(-)?[0-9]+(\\.[0-9]+)?$";
+    // Новое регулярное выражение: запрещает буквы, спецсимволы, два минуса/плюса
+    private static final String NUMBER_PATTERN = "^[-+]?[0-9]*[.,]?[0-9]+$";
 
     @Override
     public void validate(FacesContext facesContext, UIComponent uiComponent, Object value) throws ValidatorException {
@@ -24,22 +25,41 @@ public class ValidatorX implements Validator {
                             "The X field cannot be empty!"));
         }
 
-        String input = value.toString().replace(",", ".");
+        String input = value.toString();
 
-        // Проверка на максимальную длину
-        if (input.length() > 8) {
+        // Проверка на максимальную длину (12 символов)
+        if (input.length() > 12) {
             throw new ValidatorException(
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, null,
-                            "The value of X must be no more than 8 characters!"));
+                            "The value of X must be no more than 12 characters!"));
         }
 
+        // Заменяем запятые на точки
+        input = input.replace(",", ".");
+
+        // Проверка на два минуса или два плюса
+        if (input.contains("--") || input.contains("++") || input.contains("-+") || input.contains("+-")) {
+            throw new ValidatorException(
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, null,
+                            "The value of X cannot contain multiple signs!"));
+        }
+
+        // Проверка формата числа
         if (!Pattern.matches(NUMBER_PATTERN, input)) {
             throw new ValidatorException(
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, null,
-                            "The value of X must be a number!"));
+                            "The value of X must be a valid number! Only digits, one decimal point, and one sign are allowed."));
         }
 
-        BigDecimal x = new BigDecimal(input);
+        BigDecimal x;
+        try {
+            x = new BigDecimal(input);
+        } catch (NumberFormatException e) {
+            throw new ValidatorException(
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, null,
+                            "The value of X must be a valid number!"));
+        }
+
         BigDecimal minX = new BigDecimal("-5");
         BigDecimal maxX = new BigDecimal("5");
 

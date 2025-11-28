@@ -31,10 +31,14 @@
                         <p:inputText id="XValue"
                                      value="#{results.currResult.x}"
                                      placeholder="-5 ... 5"
-                                     maxlength="8">
+                                     maxlength="12"
+                                     onkeydown="return validateXInput(event)"
+                                     oninput="formatXInput(this)"
+                                     onpaste="handlePaste(event)">
                             <f:validator validatorId="validatorX"/>
                         </p:inputText>
                     </div>
+
 
                     <!-- Y -->
                     <label class="form__label">Y</label>
@@ -131,6 +135,21 @@
     <ui:define name="js">
         <h:outputScript name="js/main.js"/>
         <h:outputScript name="js/graph.js"/>
+        <h:outputScript name="js/validation.js"/>
+
+        <!-- Альтернативное решение: добавляем обработчики через чистый JavaScript -->
+        <script>
+            // Ждем загрузки DOM и добавляем обработчики
+            document.addEventListener('DOMContentLoaded', function() {
+                const xInput = document.getElementById('form:XValue');
+                if (xInput) {
+                    xInput.addEventListener('keypress', validateXInput);
+                    xInput.addEventListener('input', function() {
+                        formatXInput(this);
+                    });
+                }
+            });
+        </script>
     </ui:define>
 
 </ui:composition>

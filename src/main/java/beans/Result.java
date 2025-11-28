@@ -53,7 +53,7 @@ public class Result implements Serializable {
         this.requestTime = LocalDateTime.now();
     }
 
-    // --- Logic ---
+
 
     public Boolean checkHit() {
         BigDecimal half = BigDecimal.valueOf(0.5);

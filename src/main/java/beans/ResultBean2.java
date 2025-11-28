@@ -5,6 +5,7 @@ import database.ResultInterface;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.application.FacesMessage;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
@@ -59,10 +60,6 @@ public class ResultBean2 implements Serializable {
         return selected;
     }
 
-    // Простая проверка выбран ли хоть один Y
-    public boolean isAtLeastOneYSelected() {
-        return y5 || y4 || y3 || y2 || y1 || y0 || y_1;
-    }
 
     public void addPointFromForm() {
         FacesContext context = FacesContext.getCurrentInstance();
@@ -100,7 +97,7 @@ public class ResultBean2 implements Serializable {
         } else {
             List<BigDecimal> ys = getSelectedYValues();
             if (ys.isEmpty()) {
-                // Просто выходим - сообщение покажем через JavaScript
+                context.addMessage("messagesC", new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Please select at least one Y value!"));
                 return;
             }
 

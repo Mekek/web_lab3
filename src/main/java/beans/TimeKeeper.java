@@ -16,7 +16,7 @@ import java.util.Date;
 @Getter
 @Setter
 @ToString
-@Named("timeKeeper")  // Привязываем бин к имени "timeKeeper"
+@Named("timeKeeper")
 @SessionScoped
 public class TimeKeeper implements Serializable {
     private String time;
