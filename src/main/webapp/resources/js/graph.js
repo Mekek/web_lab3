@@ -111,12 +111,27 @@ function redrawGraph(r) {
 // Инициализация графика при загрузке
 redrawGraph('R');
 
-function printDotsOnGraph(xCenter, yCenter, rValue, isHit, currentR) {
-    // ВАЖНО: используем currentR для позиционирования точек И для определения цвета
-    // Пересчитываем статус точки относительно текущего R
+function printDotsOnGraph(xCenter, yCenter, rValue, originalHit, currentR) {
+    // Вычисляем текущий статус точки относительно текущего R
     const currentHit = isPointInArea(xCenter, yCenter, currentR);
 
-    ctx.fillStyle = currentHit ? '#00ff00' : '#ff0000';
+    // Определяем цвет точки по новой схеме:
+    let color;
+    if (originalHit && currentHit) {
+        // Зеленый: точка попадает при текущем R и попадала при своем R
+        color = '#00ff00';
+    } else if (!originalHit && !currentHit) {
+        // Красный: точка не попадает при текущем R и не попадала при своем R
+        color = '#ff0000';
+    } else if (!originalHit && currentHit) {
+        // Оранжевый: точка раньше не попадала, но после изменения R стала попадать
+        color = '#ffa500';
+    } else { // originalHit && !currentHit
+        // Фиолетовый: точка раньше попадала, но после изменения R перестала попадать
+        color = '#800080';
+    }
+
+    ctx.fillStyle = color;
 
     // Масштабируем координаты относительно ТЕКУЩЕГО R (currentR)
     const scaleFactor = hatchGap * 2 / currentR;
@@ -152,12 +167,15 @@ function updateDotsOnGraphFromTable() {
             if (row.childNodes.length > 1 && row.children.length >= 4) {
                 const children = row.children;
                 try {
+                    // Получаем оригинальный статус попадания из таблицы
+                    const originalHit = children[3].querySelector('span')?.className?.includes('hit') || false;
+
                     printDotsOnGraph(
                         parseFloat(children[0].textContent || children[0].innerText),  // X
                         parseFloat(children[1].textContent || children[1].innerText),  // Y
                         parseFloat(children[2].textContent || children[2].innerText),  // R точки
-                        children[3].querySelector('span')?.className?.includes('hit') || false, // Статус
-                        currentR  // Текущий R для масштабирования
+                        originalHit,  // Оригинальный статус попадания
+                        currentR  // Текущий R для масштабирования и определения цвета
                     );
                 } catch (e) {
                     console.warn('Error parsing row data:', e);
